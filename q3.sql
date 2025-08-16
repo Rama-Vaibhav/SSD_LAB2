@@ -1,22 +1,26 @@
 USE lab;
 DROP PROCEDURE IF EXISTS AddSubscriberIfNotExists;
-use lab;
-DELIMITER //
+DELIMITER $$
 CREATE PROCEDURE AddSubscriberIfNotExists(IN subName VARCHAR(100))
 BEGIN
-    -- Check if the subscriber already exists (case-insensitive)
-    IF EXISTS (
-        SELECT 1 
-        FROM Subscribers
-        WHERE LOWER( SubscriberName) = LOWER(subName)
-    ) THEN
-        SELECT CONCAT('Subscriber "', subName, '" already exists.') AS Message;
-    ELSE
-        INSERT INTO Subscribers ( SubscriberName)
-        VALUES (subName);
+    DECLARE cnt INT DEFAULT 0;
+    DECLARE nextId INT DEFAULT 0;
+    -- Check if subscriber already exists (case-insensitive)
+    SELECT COUNT(*) INTO cnt
+    FROM Subscribers
+    WHERE LOWER(SubscriberName) = LOWER(subName);
+    IF cnt = 0 THEN
+        -- Get next SubscriberID
+        SELECT IFNULL(MAX(SubscriberID), 0) + 1 INTO nextId
+        FROM Subscribers;
+        -- Insert new subscriber with ID and current date
+        INSERT INTO Subscribers (SubscriberID, SubscriberName, SubscriptionDate)
+        VALUES (nextId, subName, CURDATE());
         SELECT CONCAT('Subscriber "', subName, '" added successfully.') AS Message;
+    ELSE
+        SELECT CONCAT('Subscriber "', subName, '" already exists.') AS Message;
     END IF;
-END //
+END$$
 DELIMITER ;
-
-CALL AddSubscriberIfNotExists('John Doe');
+-- Test call
+CALL AddSubscriberIfNotExists('Sujata Shiekh Peterson');

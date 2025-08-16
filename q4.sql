@@ -14,5 +14,4 @@ CREATE PROCEDURE SendWatchTimeReport()
 BEGIN
     CALL GetWatchHistoryBySubscriber();
 END //
-
 DELIMITER ;
